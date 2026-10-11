@@ -8,11 +8,13 @@
 | [lab-2](../../tree/lab-2) | №2. Управление памятью в C# и анализ утечек | [docs](../../tree/lab-2/docs) |
 | [lab-3](../../tree/lab-3) | №3. Рефлексия в C#: механизм System.Type и позднее связывание | [docs](../../tree/lab-3/docs) |
 | [lab-4](../../tree/lab-4) | №4. Поиск утечек памяти и профилирование производительности | [docs](../../tree/lab-4/docs) |
+| [lab-5](../../tree/lab-5) | №5. Многопоточное и параллельное программирование (часть 1: Producer-Consumer, Mutex, deadlock; часть 2: TPL, PLINQ) | [docs](../../tree/lab-5/docs) |
 
 ## Что есть в папке `docs` каждой ветки
 
 | Файл | Содержимое |
 |---|---|
+| `ТЕОРИЯ.md` | вся теория по работе в одном файле: коротко и подробно |
 | `01-ЗАПУСК.md` | что установить и как запустить пошагово |
 | `02-ТЕОРИЯ-ПОДРОБНО.md` | теория «с нуля», со схемами |
 | `03-ТЕОРИЯ-КРАТКО.md` | короткая шпаргалка |
@@ -37,3 +39,4 @@ dotnet run -c Release
 - `Lab1`: `dotnet run` (задания 1, 2, 4), `dotnet run -c Release -- bench` (BenchmarkDotNet).
 - `Lab2`: `dotnet run -c Release -- task7` (задание 7), `-- snapshots` (этапы для снимков памяти).
 - `Lab4`: `dotnet run -c Release -- buggy` (задание 4), `-- calltree` (профилирование).
+- `Lab5`: `dotnet run -c Release -- pc` (Producer-Consumer), `-- deadlock`, `-- mutex`, `-- p2t1` … `-- p2t5`, `-- variant`; полный список режимов в `docs/01-ЗАПУСК.md` ветки lab-5.
