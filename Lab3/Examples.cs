@@ -3,6 +3,7 @@ using System.Reflection;
 namespace LabReflection
 {
     // ===== Пример из методички: класс для исследования =====
+    // Класс-образец: приватные поля, приватный и защищённый методы - над ним работают примеры ниже
     public class Product
     {
         // Поля
@@ -66,6 +67,7 @@ namespace LabReflection
     }
 
     // ===== Пример из методички: класс-калькулятор для позднего связывания =====
+    // Перегрузки Add(int,int)/Add(double,double), Multiply, приватные/статические методы - для заданий 2 и 3.x
     public class DynamicCalculator
     {
         private int _result = 0;
@@ -128,6 +130,7 @@ namespace LabReflection
         {
             Console.WriteLine("=== ПРИМЕР: БАЗОВАЯ ИНСПЕКЦИЯ ТИПА ===\n");
 
+            // typeof получает объект Type - точку входа в рефлексию (метаданные типа)
             Type productType = typeof(Product);
 
             // 1.1 Базовая информация о типе
@@ -203,6 +206,7 @@ namespace LabReflection
             // 2.1 Получение приватного поля _price
             Console.WriteLine("2.1 Работа с приватным полем _price:");
 
+            // NonPublic|Instance = приватные поля экземпляра; SetValue меняет их в обход private
             FieldInfo priceField = type.GetField("_price",
                 BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -220,6 +224,7 @@ namespace LabReflection
             // 2.2 Вызов приватного метода ValidatePrice
             Console.WriteLine("\n2.2 Вызов приватного метода ValidatePrice:");
 
+            // Приватный метод вызывается через Invoke
             MethodInfo validateMethod = type.GetMethod("ValidatePrice",
                 BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -275,6 +280,7 @@ namespace LabReflection
             // 3.1 Получение типа через имя (позднее связывание)
             Console.WriteLine("3.1 Динамическое получение типа:");
 
+            // Позднее связывание: тип находим по СТРОКЕ во время выполнения, а не на этапе компиляции
             string typeName = "LabReflection.DynamicCalculator";
             Type calcType = Type.GetType(typeName);
 
@@ -295,6 +301,7 @@ namespace LabReflection
             Console.WriteLine("\n3.3 Динамический вызов методов:");
 
             // Вызов Add(int, int)
+            // Перегрузку выбираем массивом типов параметров
             MethodInfo addMethod = calcType.GetMethod("Add", new[] { typeof(int), typeof(int) });
             if (addMethod != null)
             {

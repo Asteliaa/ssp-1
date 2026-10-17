@@ -1,6 +1,8 @@
 using LabReflection;
 
 // Примеры из методички
+// ГДЕ ЧТО: Examples.cs - примеры из методички; Tasks.cs - задания 1-6;
+// Plugins.cs + plugins.config - задание 7 (плагины). Запуск: dotnet run -c Release
 Examples.InspectType();
 Examples.PrivateMembers();
 Examples.LateBinding();

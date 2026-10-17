@@ -3,6 +3,7 @@ using System.Reflection;
 namespace LabReflection
 {
     // Задание 1: класс с тремя приватными полями разных типов и свойствами с валидацией
+    // ЗАДАНИЕ 1: 3 приватных поля (int/string/double); сеттеры свойств проверяют значения
     public class ReflectionTarget
     {
         private int _age;
@@ -45,6 +46,7 @@ namespace LabReflection
     }
 
     // Задание 4: "чёрный ящик" с приватным полем и приватным методом
+    // ЗАДАНИЕ 4: "чёрный ящик" - приватное поле и приватные методы, снаружи недоступны
     public class SecretCalculator
     {
         private int _secretValue = 10;
@@ -94,6 +96,7 @@ namespace LabReflection
             Console.WriteLine("\n=== ЗАДАНИЕ 2: МЕТОДЫ КЛАССА ЧЕРЕЗ РЕФЛЕКСИЮ ===\n");
 
             // Класс DynamicCalculator содержит публичные, приватные, статические и экземплярные методы
+            // ЗАДАНИЕ 2: Type -> GetMethods с флагами; DynamicCalculator лежит в Examples.cs
             Type type = typeof(DynamicCalculator);
 
             // Все методы: публичные, приватные, статические, экземплярные
@@ -132,6 +135,7 @@ namespace LabReflection
         {
             Console.WriteLine("\n=== ЗАДАНИЕ 3: Activator.CreateInstance ===\n");
 
+            // ЗАДАНИЕ 3: создаём объект без new - через Activator.CreateInstance (позднее связывание)
             Type type = typeof(ReflectionTarget);
 
             // Способ 1: конструктор без параметров
@@ -139,6 +143,7 @@ namespace LabReflection
             Console.WriteLine("Создан объект конструктором без параметров.");
 
             // Установка значений свойств через рефлексию
+            // Свойства ставятся/читаются по строковому имени (SetValue/GetValue)
             type.GetProperty("Age").SetValue(target1, 30);
             type.GetProperty("Name").SetValue(target1, "Reflection object");
             type.GetProperty("Rating").SetValue(target1, 4.0);
@@ -149,6 +154,7 @@ namespace LabReflection
             Console.WriteLine($"  Rating = {type.GetProperty("Rating").GetValue(target1)}");
 
             // Способ 2: конструктор с параметрами
+            // Второй способ: конструктор с параметрами (age, name, rating)
             object target2 = Activator.CreateInstance(type, new object[] { 25, "With params", 3.5 });
             Console.WriteLine("Создан объект конструктором с параметрами (25, \"With params\", 3.5).");
             Console.WriteLine($"  Age = {type.GetProperty("Age").GetValue(target2)}");
@@ -176,6 +182,7 @@ namespace LabReflection
 
             try
             {
+                // ЗАДАНИЕ 5: приватное поле достаём флагами NonPublic|Instance и меняем SetValue - обход инкапсуляции
                 FieldInfo field = type.GetField("_secretValue",
                     BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -188,6 +195,7 @@ namespace LabReflection
                 Console.WriteLine("Рефлексия нарушила инкапсуляцию: приватное поле изменено.");
 
                 // Поле, которого нет в классе
+                // Несуществующее поле -> GetField вернёт null -> ловим MissingFieldException
                 FieldInfo missing = type.GetField("_unknown",
                     BindingFlags.NonPublic | BindingFlags.Instance);
                 if (missing == null)
@@ -211,16 +219,19 @@ namespace LabReflection
             var calculator = new SecretCalculator();
             Type type = typeof(SecretCalculator);
 
+            // ЗАДАНИЕ 6: приватные методы Calculate и Reset ищем через рефлексию
             MethodInfo calculate = type.GetMethod("Calculate",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             MethodInfo reset = type.GetMethod("Reset",
                 BindingFlags.NonPublic | BindingFlags.Instance);
 
             // Способ 1: MethodInfo.Invoke, метод с двумя параметрами
+            // Способ 1: Invoke (медленнее, возвращает object)
             object result = calculate.Invoke(calculator, new object[] { 3, 4 });
             Console.WriteLine($"Способ 1 (Invoke) Calculate(3, 4) = {result}");
 
             // Способ 2: делегат
+            // Способ 2: делегат через CreateDelegate (быстрее при многих вызовах)
             Func<int, int, int> delegateMethod =
                 (Func<int, int, int>)calculate.CreateDelegate(typeof(Func<int, int, int>), calculator);
             Console.WriteLine($"Способ 2 (делегат) Calculate(5, 6) = {delegateMethod(5, 6)}");
