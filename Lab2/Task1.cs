@@ -5,6 +5,7 @@ namespace Lab2;
 // Задание 1: базовый пример с утечкой памяти
 public class MemoryLeakExample
 {
+    // static-поле = корень GC: всё, что в списке, не собирается никогда
     private static List<byte[]> _staticList = new List<byte[]>();
 
     public static void CreateMemoryLeak()
@@ -31,6 +32,7 @@ public class EventLeakExample
     public void SubscribeLeak()
     {
         // Подписка на событие без отписки
+        // Лямбда подписана на событие и не отписывается - объект-подписчик остаётся жить
         BigEvent += (sender, e) =>
         {
             var data = new byte[1024 * 100];
@@ -47,6 +49,7 @@ public static class Task1
 
         // 1. Тест памяти и LOH
         Console.WriteLine("\n1. Выделение памяти:");
+        // 10MB в обычной куче; затем 100 объектов >85KB попадают в LOH (Gen2)
         monitor.AllocateMemory(10);
         monitor.AllocateLOHObjects(100);
         monitor.PrintMemoryInfo("После выделения");
@@ -62,12 +65,14 @@ public static class Task1
         // 3. Тест Boxing
         Console.WriteLine("\n3. Тест упаковки:");
         var sw = Stopwatch.StartNew();
+        // Boxing: каждый int превращается в объект в куче - медленнее и больше мусора
         monitor.SimulateBoxing(1000000);
         sw.Stop();
         Console.WriteLine($"Время с упаковкой: {sw.ElapsedMilliseconds}ms");
 
         // Без упаковки
         sw.Restart();
+        // Тот же цикл без упаковки: List<int> хранит значения внутри массива
         var optimizedList = new List<int>();
         for (int i = 0; i < 1000000; i++)
             optimizedList.Add(i);
@@ -76,12 +81,14 @@ public static class Task1
 
         // 4. Очистка
         Console.WriteLine("\n4. После очистки:");
+        // Очистка списка + принудительный GC: память должна вернуться
         MemoryLeakExample.ClearMemoryLeak();
         monitor.Cleanup();
         monitor.PrintMemoryInfo("Очищено");
 
         // 5. Поколения объектов
         Console.WriteLine("\n5. Поколения объектов:");
+        // Поколения: новый объект Gen0, после GC.Collect() переезжает в Gen1, потом Gen2
         var obj = new object();
         Console.WriteLine($"Начальное поколение: {GC.GetGeneration(obj)}");
         GC.Collect();
@@ -117,6 +124,7 @@ public class BoxingExample
         // Упаковка - создает дополнительные объекты в куче
         for (int i = 0; i < 1000000; i++)
         {
+            // Здесь упаковка int -> object
             _boxedItems.Add(i); // int упаковывается в object
         }
     }

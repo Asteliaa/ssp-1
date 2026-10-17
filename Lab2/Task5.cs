@@ -14,6 +14,7 @@ public static class Task5
 
         // 100 массивов по 100KB
         for (int i = 0; i < 100; i++)
+            // Каждый массив 100KB > 85KB, значит в LOH; ссылки держит _keep
             _keep.Add(new byte[100 * 1024]);
 
         long after = GC.GetTotalMemory(false);
@@ -24,12 +25,14 @@ public static class Task5
         long afterGc = GC.GetTotalMemory(false);
         Console.WriteLine($"Память после GC.Collect() (ссылки удерживаются): {afterGc / 1024} KB");
 
+        // Отпускаем ссылки; LOH собирается только полной сборкой Gen2
         _keep.Clear();
         GC.Collect(2);
         GC.WaitForPendingFinalizers();
         Console.WriteLine($"Память после очистки списка и GC.Collect(2): {GC.GetTotalMemory(false) / 1024} KB");
 
         // Массивы 90KB и 80KB
+        // Порог LOH = 85 000 байт: 80KB - обычная куча, 90KB - LOH
         var small = new byte[80_000];
         var large = new byte[90_000];
         Console.WriteLine("\nСравнение размещения:");

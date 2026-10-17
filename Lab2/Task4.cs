@@ -8,6 +8,7 @@ public class StaticLeakDemo
     private static List<byte[]> _staticList = new List<byte[]>();
 
     // Добавляет 1000 объектов по 10KB в статический список
+    // 1000 x 10KB в static-список: GC.Collect() их не удалит (утечка)
     public static void AddData()
     {
         for (int i = 0; i < 1000; i++)
@@ -32,12 +33,14 @@ public class EventLeakDemo
     public void Subscribe()
     {
         var bigObject = new byte[1024 * 100];
+        // Лямбда захватывает bigObject (100KB): пока подписка жива, объект жив
         EventHandler handler = (sender, e) => { bigObject[0]++; };
         DemoEvent += handler;
         _handlers.Add(handler);
     }
 
     // Отписка от всех подписок
+    // Отписка: после неё GC может освободить 100 x 100KB
     public void Unsubscribe()
     {
         foreach (var handler in _handlers)
@@ -62,6 +65,7 @@ public static class Task4
         StaticLeakDemo.CheckMemory();
 
         Console.WriteLine("\n=== Задание 4: событийная утечка ===");
+        // Проверка: память до подписок, после, после GC (не уменьшилась), после отписки (уменьшилась)
         var eventDemo = new EventLeakDemo();
         Console.WriteLine($"До подписок: {GC.GetTotalMemory(false) / 1024} KB");
         for (int i = 0; i < 100; i++)
@@ -85,6 +89,7 @@ public static class Task4
             Console.WriteLine($"После GC.Collect() №{i}: Gen{GC.GetGeneration(obj)}");
         }
 
+        // Размеры: <85KB -> Gen0, >85KB -> сразу LOH (GetGeneration вернёт 2)
         var small = new byte[1000];
         var medium = new byte[50_000];
         var large = new byte[100_000];

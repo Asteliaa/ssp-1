@@ -4,6 +4,7 @@ namespace Lab2;
 public class StaticReferenceDemo
 {
     // СТАТИЧЕСКАЯ ССЫЛКА - ОДНА для ВСЕХ объектов
+    // Статическое поле: одно на класс
     private static List<int> _staticList = new List<int>();
 
     // ЭКЗЕМПЛЯРНАЯ ССЫЛКА - своя для КАЖДОГО объекта
@@ -30,6 +31,7 @@ public class StaticReferenceDemo
 
 public class StaticFieldDemo
 {
+    // Статический счётчик общий, экземплярный - у каждого объекта свой
     private static int _staticCounter = 0;  // ОДИН счетчик для всех
     private int _instanceCounter = 0;       // СВОЙ счетчик для каждого
 
@@ -72,6 +74,7 @@ public static class Demo
         Console.WriteLine("=== ОДНА статическая ссылка на ВСЕ объекты ===\n");
 
         // Создаем три разных объекта
+        // Три объекта: статический список у них общий, экземплярные - разные
         var obj1 = new StaticReferenceDemo();
         var obj2 = new StaticReferenceDemo();
         var obj3 = new StaticReferenceDemo();
@@ -99,6 +102,7 @@ public static class Demo
         // Демонстрация через статическое поле
         Console.WriteLine("2. Демонстрация через статическое поле:\n");
 
+        // Вторая демонстрация: счётчики
         StaticFieldDemo.ShowStaticFieldDemo();
     }
 }

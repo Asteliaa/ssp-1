@@ -6,6 +6,7 @@ namespace Lab2;
 public class MemoryMonitor : IDisposable
 {
     private bool _disposed;
+    // Держим ссылки на выделенные массивы, чтобы GC их не собрал
     private List<byte[]> _allocatedMemory = new List<byte[]>();
     private Random _random = new Random();
 
@@ -16,6 +17,7 @@ public class MemoryMonitor : IDisposable
         _allocatedMemory.Add(data);
     }
 
+    // Массивы 90000+ байт > 85KB, значит идут в Large Object Heap
     public void AllocateLOHObjects(int count)
     {
         for (int i = 0; i < count; i++)
@@ -30,6 +32,7 @@ public class MemoryMonitor : IDisposable
         var list = new List<object>();
         for (int i = 0; i < count; i++)
         {
+            // Упаковка int в object
             list.Add(i); // Упаковка
         }
     }
@@ -39,6 +42,7 @@ public class MemoryMonitor : IDisposable
         if (!string.IsNullOrEmpty(message))
             Console.WriteLine($"\n=== {message} ===");
 
+        // Статистика GC: поколение, общий размер, число сборок Gen0/1/2, Working Set процесса
         Console.WriteLine($"GC Generation: {GC.GetGeneration(this)}");
         Console.WriteLine($"Total Memory: {GC.GetTotalMemory(false) / (1024 * 1024)} MB");
         Console.WriteLine($"Collection Count Gen0: {GC.CollectionCount(0)}");
@@ -51,6 +55,7 @@ public class MemoryMonitor : IDisposable
         }
     }
 
+    // Освобождаем ссылки и просим GC собрать мусор
     public void Cleanup()
     {
         _allocatedMemory.Clear();
@@ -58,6 +63,7 @@ public class MemoryMonitor : IDisposable
         GC.WaitForPendingFinalizers();
     }
 
+    // Паттерн IDisposable: using вызывает Dispose -> Cleanup
     public void Dispose()
     {
         if (!_disposed)
@@ -75,6 +81,7 @@ public static class Task2And3
     {
         Console.WriteLine("=== Лабораторная работа: Управление памятью ===");
 
+        // using гарантирует вызов Dispose в конце блока
         using (var monitor = new MemoryMonitor())
         {
             // 1. Тестирование базовой памяти

@@ -15,6 +15,8 @@ if (args.Length > 0 && args[0] == "snapshots")
     return;
 }
 
+// ГДЕ ЧТО: Demo - статика vs экземпляр; Task1 - задание 1; Task2And3 (MemoryMonitor.cs) - задания 2-3;
+// Task4..Task7 - одноимённые задания. Запуск: dotnet run -c Release [-- task7 | -- snapshots]
 Demo.Run();
 Task1.Run();
 Task2And3.Run();

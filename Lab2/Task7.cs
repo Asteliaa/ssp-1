@@ -11,6 +11,7 @@ public class BuggyCode
 
     public BuggyCode()
     {
+        // Здесь три утечки (см. комментарии справа)
         _globalEvent += OnEvent;              // Утечка 1: подписка на статическое событие без отписки
         _cache.Add(new MemoryStream(1024));   // Утечка 2: статический кэш хранит потоки и не освобождает их
     }
@@ -32,6 +33,7 @@ public class BuggyCode
 }
 
 // Исправленная версия
+// ИСПРАВЛЕНИЕ: IDisposable + отписка + удаление из кэша
 public class FixedCode : IDisposable
 {
     private static List<IDisposable> _cache = new List<IDisposable>();
@@ -60,6 +62,7 @@ public class FixedCode : IDisposable
         }
     }
 
+    // Dispose убирает все причины утечки: событие, кэш, поток
     public void Dispose()
     {
         _globalEvent -= OnEvent;              // отписка от события
@@ -77,6 +80,7 @@ public static class Task7
     {
         Console.WriteLine("\n=== Задание 7: код с утечками ===");
         Console.WriteLine($"Память до: {GC.GetTotalMemory(true) / (1024 * 1024)} MB");
+        // Запуск: после GC память НЕ освобождается (объекты держит событие)
         new BuggyCode().SubscribeAll();
         GC.Collect();
         GC.WaitForPendingFinalizers();

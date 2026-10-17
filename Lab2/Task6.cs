@@ -8,6 +8,7 @@ namespace Lab2;
 // Дан код для оптимизации
 public class UnoptimizedCode
 {
+    // ArrayList хранит object: каждый int упаковывается
     private ArrayList _data = new ArrayList();
 
     public void AddData(int value)
@@ -29,6 +30,7 @@ public class UnoptimizedCode
 // Оптимизированный вариант: List<int>
 public class OptimizedCode
 {
+    // Обобщённый List<int> - без упаковки
     private List<int> _data = new List<int>();
 
     public void AddData(int value)
@@ -68,6 +70,7 @@ public static class Task6
     }
 
     // Возвращает время (мс) и прирост памяти (KB) по GC.GetTotalMemory для действия
+    // Замер: время (Stopwatch) и прирост памяти (GC.GetTotalMemory)
     static (long ms, long kb) Measure(Func<object> action)
     {
         long memBefore = GC.GetTotalMemory(true);
@@ -83,6 +86,7 @@ public static class Task6
     {
         Console.WriteLine("\n=== Задание 6.1: сравнение производительности (1 000 000 операций) ===");
 
+        // Прогрев JIT, чтобы замер не включал компиляцию
         ProcessWithBoxing();      // прогрев
         ProcessWithoutBoxing();
 
