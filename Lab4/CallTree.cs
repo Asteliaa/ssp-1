@@ -38,6 +38,7 @@ public static class CallTree
         PrintCallTree();
     }
 
+    // Генерация тестовых логов
     private static void GenerateData(int count)
     {
         var sw = Stopwatch.StartNew();
@@ -67,6 +68,7 @@ public static class CallTree
         AddCall("GenerateData", sw.Elapsed.TotalMilliseconds);
     }
 
+    // Уровень 1 дерева вызовов: фильтрация, затем анализ аномалий
     private static List<string> ProcessLogs()
     {
         var sw = Stopwatch.StartNew();
@@ -102,6 +104,7 @@ public static class CallTree
         return anomalies;
     }
 
+    // Горячий путь: самый тяжёлый шаг - Regex; разбор даты - задание 2 (ParseExact быстрее TryParse)
     private static bool IsAnomaly(string log)
     {
         var methodSw = Stopwatch.StartNew();
@@ -193,6 +196,7 @@ public static class CallTree
 
     private static double Time(string name) => _callTimes.TryGetValue(name, out var t) ? t : 0;
 
+    // Вывод дерева: время метода, доля от родителя, гистограмма
     private static void PrintCallTree()
     {
         Console.WriteLine("=================== CALL TREE (CPU TIME) ===================\n");

@@ -5,6 +5,7 @@ namespace Lab4;
 // Базовый код для лабораторной работы
 
 // Класс для демонстрации статической утечки
+// Базовые классы из методички: статическая утечка, событийная утечка, монитор памяти, статические ссылки
 public class MemoryLeakExample
 {
     private static List<byte[]> _staticList = new List<byte[]>();
@@ -48,6 +49,7 @@ public class EventLeakExample
 }
 
 // Класс для мониторинга памяти
+// Печатает Total Memory, число сборок Gen0/1/2 и Working Set
 public class MemoryMonitor : IDisposable
 {
     private bool _disposed;

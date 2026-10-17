@@ -2,6 +2,7 @@ namespace Lab4;
 
 // Задание 4: поиск и исправление утечек
 
+// КОД С УТЕЧКАМИ: статическое событие + статический кэш держат объекты вечно
 public class BuggyCode
 {
     private static List<IDisposable> _cache = new List<IDisposable>();
@@ -23,6 +24,7 @@ public class BuggyCode
 }
 
 // Исправленная версия
+// ИСПРАВЛЕНИЕ: Dispose отписывается от события и чистит кэш
 public class FixedCode : IDisposable
 {
     private static List<IDisposable> _cache = new List<IDisposable>();
@@ -54,6 +56,7 @@ public class FixedCode : IDisposable
 
 public static class LeakSearch
 {
+    // Создаём 100 BuggyCode: после GC память не падает, в кэше 100 объектов
     public static void Run()
     {
         Console.WriteLine("\n=== Задание 4: код с утечками (BuggyCode, 100 объектов) ===");
@@ -66,6 +69,7 @@ public static class LeakSearch
         Console.WriteLine($"Объектов в статическом кэше: {BuggyCode.CacheCount}");
     }
 
+    // С using/Dispose: кэш пуст, память освобождается
     public static void RunFixed()
     {
         Console.WriteLine("\n=== Задание 4: исправленная версия (FixedCode, 100 объектов) ===");
