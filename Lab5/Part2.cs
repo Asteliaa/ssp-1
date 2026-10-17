@@ -7,6 +7,7 @@ namespace Lab5;
 public static class Part2
 {
     // ЗАДАНИЕ 1: параллельные циклы
+    // Parallel.For: сравниваем последовательный цикл, параллельный и с локальными переменными потока (меньше блокировок)
     public static void Task1()
     {
         Console.WriteLine("=== ЗАДАНИЕ 1: ПАРАЛЛЕЛЬНЫЕ ЦИКЛЫ ===\n");
@@ -62,6 +63,7 @@ public static class Part2
     }
 
     // ЗАДАНИЕ 2: Parallel.ForEach с коллекциями, отмена и интерактивный поиск
+    // Parallel.ForEach: трансформация, фильтрация, поиск с CancellationToken, сравнение lock и localInit/localFinally
     public static void Task2()
     {
         Console.WriteLine("=== ЗАДАНИЕ 2: ПАРАЛЛЕЛЬНАЯ ОБРАБОТКА ДАННЫХ ===\n");
@@ -100,6 +102,7 @@ public static class Part2
         Console.WriteLine($"Найдено: {filtered.Count}, Время: {sw.ElapsedMilliseconds} мс");
         Console.WriteLine($"Примеры: {string.Join(", ", filtered.Take(5))}\n");
 
+        // CancellationTokenSource.Cancel() останавливает параллельный цикл
         // 3. Поиск с отменой
         Console.WriteLine("--- Поиск с отменой ---");
         int[] targets = { 777, 999, 123 };
@@ -179,6 +182,7 @@ public static class Part2
     }
 
     // ЗАДАНИЕ 3: PLINQ для анализа данных
+    // PLINQ: AsParallel(), WithDegreeOfParallelism, AsOrdered (порядок сохраняется, но медленнее)
     public static void Task3()
     {
         Console.WriteLine("=== ЗАДАНИЕ 3: PLINQ АНАЛИЗ ДАННЫХ ===\n");
@@ -237,6 +241,7 @@ public static class Part2
     }
 
     // ЗАДАНИЕ 4: разделение данных и агрегация
+    // Partitioner: как делить данные между потоками; агрегация через локальные суммы
     public static void Task4()
     {
         Console.WriteLine("=== ЗАДАНИЕ 4: РАЗДЕЛЕНИЕ ДАННЫХ ===\n");
@@ -290,6 +295,7 @@ public static class Part2
     }
 
     // Симуляция функции обработки пикселя
+    // "Пиксель" - тяжёлое вычисление, чтобы параллелизм был заметен
     static double ProcessPixel(double pixel)
     {
         // Сложное вычисление, имитирующее фильтр изображения
@@ -297,6 +303,7 @@ public static class Part2
     }
 
     // ЗАДАНИЕ 5: комплексная обработка изображений (симуляция)
+    // Обработка "изображения" (2D-массив): последовательно / по строкам Parallel.For / с разделением / PLINQ
     public static void Task5()
     {
         Console.WriteLine("=== ЗАДАНИЕ 5: ПАРАЛЛЕЛЬНАЯ ОБРАБОТКА ИЗОБРАЖЕНИЙ ===\n");
@@ -370,9 +377,11 @@ public static class Part2
 }
 
 // Индивидуальное задание, вариант 2: параллельная фильтрация коллекций (PLINQ, пользовательские условия)
+// ИНДИВИДУАЛЬНЫЙ ВАРИАНТ: фильтр по условию (простое число и др.) - LINQ vs PLINQ vs Parallel.ForEach
 public static class Variant2
 {
     // Условие, затратное по времени: проверка числа на простоту делением
+    // Дорогая проверка, из-за которой параллельность даёт выигрыш
     static bool IsPrime(int n)
     {
         if (n < 2) return false;

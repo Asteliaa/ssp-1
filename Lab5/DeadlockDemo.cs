@@ -4,10 +4,12 @@ namespace Lab5;
 public static class DeadlockDemo
 {
     // Два объекта для блокировки
+    // Два замка: поток1 берёт A потом B, поток2 B потом A -> взаимная блокировка (deadlock)
     private static object _lockA = new object();
     private static object _lockB = new object();
 
     // Исходная программа: потоки берут блокировки в разном порядке, программа зависает
+    // ЗАДАНИЕ 1: воспроизведение deadlock; смотреть в VS: Debug > Windows > Parallel Stacks/Threads
     public static void Run()
     {
         Console.WriteLine("=== Демонстрация Deadlock ===\n");
@@ -19,6 +21,7 @@ public static class DeadlockDemo
         Console.WriteLine("Программа завершена (это сообщение не будет выведено)");
     }
 
+    // Thread1: A -> (пауза 1с) -> B
     static void Thread1()
     {
         lock (_lockA)
@@ -32,6 +35,7 @@ public static class DeadlockDemo
         }
     }
 
+    // Thread2: B -> (пауза 1с) -> A. Пауза гарантирует, что оба успеют взять первый замок
     static void Thread2()
     {
         lock (_lockB)
@@ -46,6 +50,7 @@ public static class DeadlockDemo
     }
 
     // Задание 2: оба потока захватывают блокировки в одинаковом порядке (сначала A, потом B)
+    // ЗАДАНИЕ 2: исправление - единый порядок захвата (A затем B)
     public static void RunFixed()
     {
         Console.WriteLine("=== Deadlock исправлен: одинаковый порядок захвата ===\n");
@@ -69,6 +74,7 @@ public static class DeadlockDemo
     }
 
     // Задание 3: Monitor.TryEnter с тайм-аутом вместо lock
+    // ЗАДАНИЕ 3: Monitor.TryEnter с тайм-аутом - вместо вечного зависания поток сообщает о проблеме
     public static void RunTimeout()
     {
         Console.WriteLine("=== Обнаружение deadlock по тайм-ауту (Monitor.TryEnter) ===\n");

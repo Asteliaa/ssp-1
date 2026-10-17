@@ -3,6 +3,8 @@ using Lab5;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 // Аргумент выбирает задание (список режимов описан в docs/01-ЗАПУСК.md)
+// ГДЕ ЧТО: ЧАСТЬ 1 - ProducerConsumer.cs (pc*), DeadlockDemo.cs (deadlock*), MutexCrossProcess.cs (mutex);
+// ЧАСТЬ 2 - Part2.cs: p2t1..p2t5 (Parallel.For/ForEach, PLINQ, Partitioner, "картинка"), variant (индивидуальный вариант)
 switch (args.Length > 0 ? args[0] : "")
 {
     case "pc": ProducerConsumer.Run(bufferSize: 5, producers: 2, consumers: 3); break;
