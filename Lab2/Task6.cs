@@ -49,6 +49,8 @@ public class OptimizedCode
     }
 }
 
+// ТЕОРИЯ: ArrayList и List<object> хранят object, поэтому int упаковывается (boxing) и распаковывается.
+// List<int> хранит значения подряд в массиве: быстрее и в разы меньше памяти.
 public static class Task6
 {
     const int Count = 1_000_000;

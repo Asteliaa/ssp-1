@@ -3,6 +3,9 @@ namespace Lab2;
 // Задание 7: поиск утечек в коде
 
 // Код с утечками
+// ТЕОРИЯ: виды утечек в коде ниже - (1) подписка на статическое событие без отписки, (2) статический кэш
+// (MemoryStream), (3) большое поле, удерживаемое объектом, который держит событие.
+// Исправление: IDisposable (отписка, удаление из кэша, Dispose потока) и using.
 public class BuggyCode
 {
     private static List<IDisposable> _cache = new List<IDisposable>();

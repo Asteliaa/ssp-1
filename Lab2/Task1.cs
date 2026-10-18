@@ -40,6 +40,8 @@ public class EventLeakExample
     }
 }
 
+// ТЕОРИЯ: boxing = упаковка значения (int) в объект кучи (object/ArrayList/List<object>):
+// память на каждый элемент, больше работы GC, unboxing проверяет тип. Лечение: List<int> (обобщения).
 public static class Task1
 {
     public static void Run()
