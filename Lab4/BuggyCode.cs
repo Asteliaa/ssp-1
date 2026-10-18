@@ -3,6 +3,7 @@ namespace Lab4;
 // Задание 4: поиск и исправление утечек
 
 // КОД С УТЕЧКАМИ: статическое событие + статический кэш держат объекты вечно
+// ТЕОРИЯ: три утечки (событие, статический кэш, поле, удерживаемое событием) лечатся IDisposable и using.
 public class BuggyCode
 {
     private static List<IDisposable> _cache = new List<IDisposable>();

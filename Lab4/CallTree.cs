@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 namespace Lab4;
 
 // Call Tree с горячими путями (код из методички)
+// ТЕОРИЯ: Call Tree - дерево вызовов с временем; горячий путь Run -> ProcessLogs -> IsAnomaly.
+// Дорогие шаги: Regex (разбор шаблона и сопоставление), разбор даты (TryParse перебирает форматы, ParseExact быстрее),
+// Split (массив и новые строки). Конкатенация += в цикле O(n^2), StringBuilder быстрее.
 public static class CallTree
 {
     private static List<string> _logs = new List<string>();
