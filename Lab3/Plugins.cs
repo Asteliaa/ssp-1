@@ -69,6 +69,10 @@ namespace LabReflection
 
     // ============ ЗАГРУЗЧИК ПЛАГИНОВ ============
 
+    // ТЕОРИЯ: плагины. Атрибут - метаданные ([Plugin("имя")]), читаются через GetCustomAttribute<T>().
+    // Алгоритм: Assembly -> GetTypes() -> IsAssignableFrom(IPlugin) (реализует ли класс интерфейс) -> атрибут и имя из
+    // plugins.config -> Activator.CreateInstance -> методы с [PluginMethod] через Invoke.
+    // Новый плагин подключается добавлением класса и строки в конфиг, код загрузчика не меняется.
     public static class PluginLoader
     {
         // Загружает плагины, имена которых перечислены в конфигурационном файле

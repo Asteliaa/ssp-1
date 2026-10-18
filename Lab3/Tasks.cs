@@ -47,6 +47,8 @@ namespace LabReflection
 
     // Задание 4: "чёрный ящик" с приватным полем и приватным методом
     // ЗАДАНИЕ 4: "чёрный ящик" - приватное поле и приватные методы, снаружи недоступны
+    // ТЕОРИЯ: "чёрный ящик" - класс, структуру которого заранее не знаем/не видим извне.
+    // Рефлексия позволяет исследовать его и достать private-члены (NonPublic | Instance).
     public class SecretCalculator
     {
         private int _secretValue = 10;
@@ -91,6 +93,8 @@ namespace LabReflection
         }
 
         // Задание 2: информация о всех методах класса
+        // ТЕОРИЯ: BindingFlags - флаги поиска: Public, NonPublic (private/protected), Instance, Static, DeclaredOnly.
+        // Складываются через "|". Без флагов GetMethods() возвращает только public. get_/set_ - служебные методы свойств.
         public static void Task2()
         {
             Console.WriteLine("\n=== ЗАДАНИЕ 2: МЕТОДЫ КЛАССА ЧЕРЕЗ РЕФЛЕКСИЮ ===\n");
@@ -131,6 +135,8 @@ namespace LabReflection
         }
 
         // Задание 3: создание экземпляра через Activator.CreateInstance
+        // ТЕОРИЯ: Activator.CreateInstance создаёт объект без оператора new (позднее связывание);
+        // с параметрами - массив аргументов; то же умеет ConstructorInfo.Invoke. Invoke возвращает object (результат упаковывается).
         public static void Task3()
         {
             Console.WriteLine("\n=== ЗАДАНИЕ 3: Activator.CreateInstance ===\n");
@@ -212,6 +218,8 @@ namespace LabReflection
         }
 
         // Задание 6: вызов приватного метода
+        // ТЕОРИЯ: MethodInfo.Invoke - универсальный, но медленный вызов; делегат (CreateDelegate) хранит ссылку на метод
+        // и вызывается как обычная функция - быстрее при многих вызовах.
         public static void Task6()
         {
             Console.WriteLine("\n=== ЗАДАНИЕ 6: ВЫЗОВ ПРИВАТНОГО МЕТОДА ===\n");
