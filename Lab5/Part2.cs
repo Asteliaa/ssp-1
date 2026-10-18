@@ -4,6 +4,12 @@ using System.Diagnostics;
 namespace Lab5;
 
 // Часть 2: TPL, параллельные циклы, PLINQ, разделение данных (код методических указаний, задания 1-5)
+// ТЕОРИЯ: TPL (System.Threading.Tasks): Task, Parallel.For/ForEach, CancellationToken, планировщик на пуле потоков, PLINQ.
+// Parallel.For - по диапазону индексов; Parallel.ForEach - по элементам коллекции. Итерации независимы, порядок произвольный.
+// PLINQ (AsParallel) параллелит LINQ; порядок не гарантирован (AsOrdered медленнее); на дешёвых операциях бывает медленнее LINQ.
+// РАЗДЕЛЕНИЕ данных: по диапазонам, блоками/порциями, пользовательское (Partitioner.Create).
+// АГРЕГАЦИЯ: lock/Interlocked (просто, но потоки ждут), локальные переменные потока localInit/localFinally (быстрее),
+// Sum/Aggregate в PLINQ. Параллелить стоит тяжёлые независимые CPU-задачи; не стоит дешёвые операции и ввод-вывод (там async).
 public static class Part2
 {
     // ЗАДАНИЕ 1: параллельные циклы
