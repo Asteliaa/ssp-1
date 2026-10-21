@@ -1,23 +1,18 @@
-// ТЕОРИЯ К ЗАЩИТЕ (ЛР3): рефлексия
-// Рефлексия (System.Reflection) - программа во время выполнения читает метаданные типов (поля, свойства,
-// методы, конструкторы, атрибуты, сборки) и работает с ними: создаёт объекты, читает/меняет значения, вызывает методы.
-// Классы: Type, FieldInfo, PropertyInfo, MethodInfo, ConstructorInfo, Assembly, BindingFlags, Activator.
-// typeof(T) - тип известен при компиляции; obj.GetType() - ФАКТИЧЕСКИЙ тип объекта; Type.GetType("имя") - по строке.
-// РИСКИ: обход инкапсуляции (private) = нарушение безопасности; медленно (поиск, упаковка аргументов);
-// ошибки только при запуске, если реальная структура класса не совпала с ожидаемой; нет проверки компилятором;
-// проблемы с тримингом и Native AOT.
-// РАННЕЕ связывание: тип/метод выбирает компилятор (быстро, проверка при компиляции).
-// ПОЗДНЕЕ: выбор во время выполнения по имени (гибко, но медленнее и ошибки при запуске).
 using LabReflection;
 
-// Примеры из методички
-// ГДЕ ЧТО: Examples.cs - примеры из методички; Tasks.cs - задания 1-6;
-// Plugins.cs + plugins.config - задание 7 (плагины). Запуск: dotnet run -c Release
+// dotnet run -c Release [-- extra]
+if (args.Length > 0 && args[0] == "extra")
+{
+    PluginManagerDemo.Run();
+    return;
+}
+
 Examples.InspectType();
 Examples.PrivateMembers();
 Examples.LateBinding();
+ExamplesExtra.PluginInspection();
+ExamplesExtra.InvokeMembers();
 
-// Задания 1-7
 Tasks.Task1();
 Tasks.Task2();
 Tasks.Task3();
@@ -25,3 +20,11 @@ Tasks.Task4();
 Tasks.Task5();
 Tasks.Task6();
 PluginLoader.Task7();
+
+PluginManagerDemo.Run();
+
+if (!Console.IsInputRedirected)
+{
+    Console.WriteLine("\nНажмите любую клавишу для завершения...");
+    Console.ReadKey();
+}

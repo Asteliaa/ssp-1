@@ -5,7 +5,6 @@ namespace LabReflection
     // ============ АТРИБУТЫ ============
 
     [AttributeUsage(AttributeTargets.Class)]
-    // Атрибуты - метаданные: [Plugin("имя")] на классе, [PluginMethod("описание")] на методе
     public class PluginAttribute : Attribute
     {
         public string Name { get; }
@@ -21,7 +20,6 @@ namespace LabReflection
 
     // ============ ИНТЕРФЕЙС ============
 
-    // Контракт плагина: загрузчик знает только этот интерфейс
     public interface IPlugin
     {
         void Execute();
@@ -30,7 +28,6 @@ namespace LabReflection
     // ============ ПЛАГИНЫ ============
 
     [Plugin("MySimplePlugin")]
-    // Плагины - обычные классы с атрибутом; имя в plugins.config включает их
     public class MyPlugin : IPlugin
     {
         [PluginMethod("Основной метод")]
@@ -56,7 +53,7 @@ namespace LabReflection
         }
     }
 
-    // Новый плагин: для его подключения достаточно добавить имя в plugins.config
+    // Новый плагин: достаточно строки в plugins.config
     [Plugin("Greeter")]
     public class GreeterPlugin : IPlugin
     {
@@ -69,14 +66,8 @@ namespace LabReflection
 
     // ============ ЗАГРУЗЧИК ПЛАГИНОВ ============
 
-    // ТЕОРИЯ: плагины. Атрибут - метаданные ([Plugin("имя")]), читаются через GetCustomAttribute<T>().
-    // Алгоритм: Assembly -> GetTypes() -> IsAssignableFrom(IPlugin) (реализует ли класс интерфейс) -> атрибут и имя из
-    // plugins.config -> Activator.CreateInstance -> методы с [PluginMethod] через Invoke.
-    // Новый плагин подключается добавлением класса и строки в конфиг, код загрузчика не меняется.
     public static class PluginLoader
     {
-        // Загружает плагины, имена которых перечислены в конфигурационном файле
-        // Загрузка: читаем имена из конфига, ищем типы в сборке, создаём и вызываем методы
         public static void Load(string configPath)
         {
             string[] names = File.ReadAllLines(configPath)
@@ -85,7 +76,6 @@ namespace LabReflection
                 .ToArray();
             Console.WriteLine($"Плагины в {Path.GetFileName(configPath)}: {string.Join(", ", names)}");
 
-            // Сборка и все её типы
             // Берём все типы текущей сборки
             Assembly assembly = Assembly.GetExecutingAssembly();
             Type[] types = assembly.GetTypes();
@@ -96,18 +86,15 @@ namespace LabReflection
                 if (!typeof(IPlugin).IsAssignableFrom(type) || type.IsInterface || type.IsAbstract)
                     continue;
 
-                // Атрибут PluginAttribute
                 // Читаем атрибут; грузим только плагины, имя которых есть в конфиге
                 PluginAttribute attribute = type.GetCustomAttribute<PluginAttribute>();
                 if (attribute == null || !names.Contains(attribute.Name))
                     continue;
 
-                // Создание экземпляра через Activator.CreateInstance
                 // Создаём экземпляр плагина без new
                 IPlugin plugin = (IPlugin)Activator.CreateInstance(type);
                 Console.WriteLine($"\nЗагружен плагин: {attribute.Name} ({type.Name})");
 
-                // Вызов методов плагина через рефлексию
                 // Перебираем методы с [PluginMethod] и вызываем через Invoke
                 foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                 {
@@ -124,8 +111,6 @@ namespace LabReflection
             }
         }
 
-        // Задание 7
-        // ЗАДАНИЕ 7: добавляем Greeter в конфиг - код не меняется, плагин подхватывается
         public static void Task7()
         {
             Console.WriteLine("\n=== ЗАДАНИЕ 7: СИСТЕМА ПЛАГИНОВ ===\n");
@@ -134,7 +119,6 @@ namespace LabReflection
             string original = File.ReadAllText(configPath);
             Load(configPath);
 
-            // Добавляем новый плагин в конфигурацию: основной код не меняется
             Console.WriteLine("\n--- В plugins.config добавлена строка Greeter ---\n");
             File.AppendAllText(configPath, "Greeter" + Environment.NewLine);
             Load(configPath);
