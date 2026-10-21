@@ -6,23 +6,20 @@ namespace Lab2;
 public class MemoryMonitor : IDisposable
 {
     private bool _disposed;
-    // Держим ссылки на выделенные массивы, чтобы GC их не собрал
     private List<byte[]> _allocatedMemory = new List<byte[]>();
     private Random _random = new Random();
 
     public void AllocateMemory(int sizeInMB)
     {
-        // Выделяем память с возможной утечкой
         var data = new byte[sizeInMB * 1024 * 1024];
         _allocatedMemory.Add(data);
     }
 
-    // Массивы 90000+ байт > 85KB, значит идут в Large Object Heap
     public void AllocateLOHObjects(int count)
     {
         for (int i = 0; i < count; i++)
         {
-            // Объекты > 85KB
+            // объекты > 85KB
             var largeObject = new byte[90000 + i];
         }
     }
@@ -32,8 +29,7 @@ public class MemoryMonitor : IDisposable
         var list = new List<object>();
         for (int i = 0; i < count; i++)
         {
-            // Упаковка int в object
-            list.Add(i); // Упаковка
+            list.Add(i); // упаковка
         }
     }
 
@@ -42,7 +38,6 @@ public class MemoryMonitor : IDisposable
         if (!string.IsNullOrEmpty(message))
             Console.WriteLine($"\n=== {message} ===");
 
-        // Статистика GC: поколение, общий размер, число сборок Gen0/1/2, Working Set процесса
         Console.WriteLine($"GC Generation: {GC.GetGeneration(this)}");
         Console.WriteLine($"Total Memory: {GC.GetTotalMemory(false) / (1024 * 1024)} MB");
         Console.WriteLine($"Collection Count Gen0: {GC.CollectionCount(0)}");
@@ -55,7 +50,6 @@ public class MemoryMonitor : IDisposable
         }
     }
 
-    // Освобождаем ссылки и просим GC собрать мусор
     public void Cleanup()
     {
         _allocatedMemory.Clear();
@@ -63,7 +57,6 @@ public class MemoryMonitor : IDisposable
         GC.WaitForPendingFinalizers();
     }
 
-    // Паттерн IDisposable: using вызывает Dispose -> Cleanup
     public void Dispose()
     {
         if (!_disposed)
@@ -74,14 +67,14 @@ public class MemoryMonitor : IDisposable
     }
 }
 
+// Задание 3: тестирование и анализ
 public static class Task2And3
 {
-    // Задание 3: тестирование и анализ
     public static void Run()
     {
+        Console.WriteLine("\n=== Задание 3: тестирование и анализ ===");
         Console.WriteLine("=== Лабораторная работа: Управление памятью ===");
 
-        // using гарантирует вызов Dispose в конце блока
         using (var monitor = new MemoryMonitor())
         {
             // 1. Тестирование базовой памяти
@@ -117,5 +110,9 @@ public static class Task2And3
             stopwatch.Stop();
             Console.WriteLine($"Время выполнения без упаковки: {stopwatch.ElapsedMilliseconds}ms");
         }
+
+        Console.WriteLine("\nНажмите любую клавишу для завершения...");
+        if (!Console.IsInputRedirected)
+            Console.ReadKey();
     }
 }

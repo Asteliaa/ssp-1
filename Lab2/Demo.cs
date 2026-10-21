@@ -1,23 +1,21 @@
 namespace Lab2;
 
-// Наглядная демонстрация: статическая и экземплярная ссылки
 public class StaticReferenceDemo
 {
-    // СТАТИЧЕСКАЯ ССЫЛКА - ОДНА для ВСЕХ объектов
-    // Статическое поле: одно на класс
+    // статическая ссылка - одна для всех объектов
     private static List<int> _staticList = new List<int>();
 
-    // ЭКЗЕМПЛЯРНАЯ ССЫЛКА - своя для КАЖДОГО объекта
+    // экземплярная ссылка - своя у каждого объекта
     private List<int> _instanceList = new List<int>();
 
     public void AddToStatic(int value)
     {
-        _staticList.Add(value);  // Все объекты используют ОДИН и тот же список
+        _staticList.Add(value);
     }
 
     public void AddToInstance(int value)
     {
-        _instanceList.Add(value); // Каждый объект использует СВОЙ список
+        _instanceList.Add(value);
     }
 
     public void PrintLists(string objectName)
@@ -31,14 +29,13 @@ public class StaticReferenceDemo
 
 public class StaticFieldDemo
 {
-    // Статический счётчик общий, экземплярный - у каждого объекта свой
-    private static int _staticCounter = 0;  // ОДИН счетчик для всех
-    private int _instanceCounter = 0;       // СВОЙ счетчик для каждого
+    private static int _staticCounter = 0;
+    private int _instanceCounter = 0;
 
     public void Increment()
     {
-        _staticCounter++;     // Увеличивает ОБЩИЙ счетчик
-        _instanceCounter++;   // Увеличивает СВОЙ счетчик
+        _staticCounter++;
+        _instanceCounter++;
     }
 
     public void ShowCounters(string objectName)
@@ -53,10 +50,9 @@ public class StaticFieldDemo
         var objA = new StaticFieldDemo();
         var objB = new StaticFieldDemo();
 
-        objA.Increment(); // staticCounter = 1, instanceCounter objA = 1
-        objA.Increment(); // staticCounter = 2, instanceCounter objA = 2
-
-        objB.Increment(); // staticCounter = 3, instanceCounter objB = 1
+        objA.Increment();
+        objA.Increment();
+        objB.Increment();
 
         Console.WriteLine("После операций:");
         objA.ShowCounters("Объект A");
@@ -73,25 +69,21 @@ public static class Demo
     {
         Console.WriteLine("=== ОДНА статическая ссылка на ВСЕ объекты ===\n");
 
-        // Создаем три разных объекта
-        // Три объекта: статический список у них общий, экземплярные - разные
         var obj1 = new StaticReferenceDemo();
         var obj2 = new StaticReferenceDemo();
         var obj3 = new StaticReferenceDemo();
 
-        // Добавляем данные через разные объекты
         Console.WriteLine("1. Добавляем данные через разные объекты:\n");
 
-        obj1.AddToStatic(100);  // Статический список для ВСЕХ объектов
-        obj1.AddToInstance(1);   // Только для obj1
+        obj1.AddToStatic(100);
+        obj1.AddToInstance(1);
 
-        obj2.AddToStatic(200);  // Добавляем в ТОТ ЖЕ статический список
-        obj2.AddToInstance(2);   // Только для obj2
+        obj2.AddToStatic(200);
+        obj2.AddToInstance(2);
 
-        obj3.AddToStatic(300);  // Опять в ТОТ ЖЕ статический список
-        obj3.AddToInstance(3);   // Только для obj3
+        obj3.AddToStatic(300);
+        obj3.AddToInstance(3);
 
-        // Выводим состояние каждого объекта
         obj1.PrintLists("Объект 1");
         obj2.PrintLists("Объект 2");
         obj3.PrintLists("Объект 3");
@@ -99,10 +91,7 @@ public static class Demo
         Console.WriteLine("Статический список ОДИН для всех!");
         Console.WriteLine("Экземплярные списки РАЗНЫЕ для каждого!\n");
 
-        // Демонстрация через статическое поле
         Console.WriteLine("2. Демонстрация через статическое поле:\n");
-
-        // Вторая демонстрация: счётчики
         StaticFieldDemo.ShowStaticFieldDemo();
     }
 }

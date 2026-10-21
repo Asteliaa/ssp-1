@@ -4,11 +4,8 @@ using System.Diagnostics;
 namespace Lab2;
 
 // Задание 6: оптимизация через устранение упаковки (Boxing Elimination)
-
-// Дан код для оптимизации
 public class UnoptimizedCode
 {
-    // ArrayList хранит object: каждый int упаковывается
     private ArrayList _data = new ArrayList();
 
     public void AddData(int value)
@@ -27,15 +24,13 @@ public class UnoptimizedCode
     }
 }
 
-// Оптимизированный вариант: List<int>
 public class OptimizedCode
 {
-    // Обобщённый List<int> - без упаковки
     private List<int> _data = new List<int>();
 
     public void AddData(int value)
     {
-        _data.Add(value); // Без упаковки
+        _data.Add(value);
     }
 
     public int GetSum()
@@ -49,8 +44,6 @@ public class OptimizedCode
     }
 }
 
-// ТЕОРИЯ: ArrayList и List<object> хранят object, поэтому int упаковывается (boxing) и распаковывается.
-// List<int> хранит значения подряд в массиве: быстрее и в разы меньше памяти.
 public static class Task6
 {
     const int Count = 1_000_000;
@@ -71,8 +64,7 @@ public static class Task6
         return list;
     }
 
-    // Возвращает время (мс) и прирост памяти (KB) по GC.GetTotalMemory для действия
-    // Замер: время (Stopwatch) и прирост памяти (GC.GetTotalMemory)
+    // время (мс) и прирост памяти (KB) по GC.GetTotalMemory
     static (long ms, long kb) Measure(Func<object> action)
     {
         long memBefore = GC.GetTotalMemory(true);
@@ -88,8 +80,7 @@ public static class Task6
     {
         Console.WriteLine("\n=== Задание 6.1: сравнение производительности (1 000 000 операций) ===");
 
-        // Прогрев JIT, чтобы замер не включал компиляцию
-        ProcessWithBoxing();      // прогрев
+        ProcessWithBoxing(); // прогрев JIT
         ProcessWithoutBoxing();
 
         var boxing = Measure(ProcessWithBoxing);
@@ -98,6 +89,7 @@ public static class Task6
         Console.WriteLine($"{"Метод",-25}{"Время, мс",12}{"Память, KB",14}");
         Console.WriteLine($"{"ProcessWithBoxing",-25}{boxing.ms,12}{boxing.kb,14}");
         Console.WriteLine($"{"ProcessWithoutBoxing",-25}{noBoxing.ms,12}{noBoxing.kb,14}");
+        Console.WriteLine($"Без упаковки быстрее в {(double)boxing.ms / Math.Max(1, noBoxing.ms):F1} раза, памяти меньше в {(double)boxing.kb / Math.Max(1, noBoxing.kb):F1} раза");
 
         Console.WriteLine("\n=== Задание 6.2: оптимизация кода с ArrayList ===");
 
