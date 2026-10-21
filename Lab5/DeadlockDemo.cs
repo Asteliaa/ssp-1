@@ -1,20 +1,12 @@
 namespace Lab5;
 
-// Искусственный deadlock (код методических указаний) и два способа борьбы с ним
-// ТЕОРИЯ: deadlock - Thread1 держит A и ждёт B, Thread2 держит B и ждёт A (круг ожидания).
-// Как избежать: единый порядок захвата, тайм-ауты (Monitor.TryEnter), меньше замков и короче, не звать чужой код под замком.
-// Диагностика в Visual Studio: Debug > Break All, окна Parallel Stacks, Threads, Call Stack.
-// Задача об обедающих философах: "китайцы" - потоки, "палочки" - ресурсы, рис не ресурс. Выход: сначала
-// отпустить ресурсы у одних потоков, потом у других; единый порядок взятия палочек; не больше N-1 едящих.
+// Deadlock: демонстрация, исправление единым порядком, обнаружение по тайм-ауту
 public static class DeadlockDemo
 {
     // Два объекта для блокировки
-    // Два замка: поток1 берёт A потом B, поток2 B потом A -> взаимная блокировка (deadlock)
     private static object _lockA = new object();
     private static object _lockB = new object();
 
-    // Исходная программа: потоки берут блокировки в разном порядке, программа зависает
-    // ЗАДАНИЕ 1: воспроизведение deadlock; смотреть в VS: Debug > Windows > Parallel Stacks/Threads
     public static void Run()
     {
         Console.WriteLine("=== Демонстрация Deadlock ===\n");
@@ -26,7 +18,6 @@ public static class DeadlockDemo
         Console.WriteLine("Программа завершена (это сообщение не будет выведено)");
     }
 
-    // Thread1: A -> (пауза 1с) -> B
     static void Thread1()
     {
         lock (_lockA)
@@ -40,7 +31,6 @@ public static class DeadlockDemo
         }
     }
 
-    // Thread2: B -> (пауза 1с) -> A. Пауза гарантирует, что оба успеют взять первый замок
     static void Thread2()
     {
         lock (_lockB)
@@ -54,8 +44,6 @@ public static class DeadlockDemo
         }
     }
 
-    // Задание 2: оба потока захватывают блокировки в одинаковом порядке (сначала A, потом B)
-    // ЗАДАНИЕ 2: исправление - единый порядок захвата (A затем B)
     public static void RunFixed()
     {
         Console.WriteLine("=== Deadlock исправлен: одинаковый порядок захвата ===\n");
@@ -78,8 +66,6 @@ public static class DeadlockDemo
         }
     }
 
-    // Задание 3: Monitor.TryEnter с тайм-аутом вместо lock
-    // ЗАДАНИЕ 3: Monitor.TryEnter с тайм-аутом - вместо вечного зависания поток сообщает о проблеме
     public static void RunTimeout()
     {
         Console.WriteLine("=== Обнаружение deadlock по тайм-ауту (Monitor.TryEnter) ===\n");
@@ -113,6 +99,51 @@ public static class DeadlockDemo
         finally
         {
             Monitor.Exit(first);
+        }
+    }
+}
+
+// Обедающие философы: потоки = философы, ресурсы = палочки (рис ресурсом не является)
+public static class Philosophers
+{
+    const int N = 5;
+    static readonly object[] Sticks = Enumerable.Range(0, N).Select(_ => new object()).ToArray();
+
+    // fixedOrder=false: все берут сначала левую палочку -> deadlock; true: сначала палочку с меньшим номером
+    public static void Run(bool fixedOrder)
+    {
+        Console.WriteLine($"=== Философы ({(fixedOrder ? "единый порядок палочек" : "левая, потом правая - возможен deadlock")}) ===\n");
+        var tasks = new Task[N];
+        for (int i = 0; i < N; i++)
+        {
+            int id = i;
+            tasks[i] = Task.Run(() => Dine(id, fixedOrder));
+        }
+        if (!Task.WaitAll(tasks, 8000))
+        {
+            Console.WriteLine("\nDEADLOCK: за 8 секунд философы не доели - каждый держит левую палочку и ждёт правую");
+            return;
+        }
+        Console.WriteLine("\nВсе философы поели, deadlock нет");
+    }
+
+    static void Dine(int id, bool fixedOrder)
+    {
+        int left = id, right = (id + 1) % N;
+        int first = left, second = right;
+        if (fixedOrder && left > right) (first, second) = (right, left);
+        for (int round = 0; round < 3; round++)
+        {
+            lock (Sticks[first])
+            {
+                Console.WriteLine($"Философ {id}: взял палочку {first}");
+                Thread.Sleep(100);
+                lock (Sticks[second])
+                {
+                    Console.WriteLine($"Философ {id}: взял палочку {second}, ест (раунд {round + 1})");
+                    Thread.Sleep(50);
+                }
+            }
         }
     }
 }

@@ -1,15 +1,10 @@
 namespace Lab5;
 
-// Паттерн Producer-Consumer с семафорами и мьютексом (код методических указаний)
-// ТЕОРИЯ: Producer-Consumer. _emptySlots - семафор со счётчиком свободных мест (производитель ждёт при полном буфере),
-// _filledSlots - занятых мест (потребитель ждёт при пустом); Mutex защищает саму очередь (критическая секция).
-// Буфер 2: потоки чаще ждут; 10: реже. Wait уменьшает счётчик (при 0 - ждать), Release увеличивает.
+// Producer-Consumer: SemaphoreSlim (свободные/занятые места) + Mutex (доступ к буферу)
 public static class ProducerConsumer
 {
     // Общий буфер (ограниченная очередь)
-    // Общий буфер - критический ресурс; его защищает Mutex
     private static Queue<int> _buffer = new Queue<int>();
-    // _emptySlots = сколько свободных мест (производитель ждёт), _filledSlots = сколько занятых (потребитель ждёт)
     private static SemaphoreSlim _emptySlots = null!;
     private static SemaphoreSlim _filledSlots = null!;
     // Мьютекс для защиты доступа к буферу
@@ -20,7 +15,6 @@ public static class ProducerConsumer
     public static void Run(int bufferSize, int producers, int consumers)
     {
         _buffer = new Queue<int>();
-        // Свободных мест сначала bufferSize, занятых 0
         _emptySlots = new SemaphoreSlim(bufferSize, bufferSize);
         _filledSlots = new SemaphoreSlim(0, bufferSize);
         _isRunning = true;
@@ -28,12 +22,10 @@ public static class ProducerConsumer
         Console.WriteLine($"=== Producer-Consumer with Semaphore (буфер {bufferSize}, производителей {producers}, потребителей {consumers}) ===\n");
 
         var tasks = new List<Task>();
-        // Запускаем производителей и потребителей как задачи Task
         for (int i = 1; i <= producers; i++) { int id = i; tasks.Add(Task.Run(() => Producer(id))); }
         for (int i = 1; i <= consumers; i++) { int id = i; tasks.Add(Task.Run(() => Consumer(id))); }
 
         // Работаем 5 секунд
-        // Работаем 5 секунд, потом флаг остановки и ожидание задач
         Thread.Sleep(5000);
         _isRunning = false;
 
@@ -43,13 +35,12 @@ public static class ProducerConsumer
     }
 
     // Метод производителя
-    // ПРОИЗВОДИТЕЛЬ: ждёт свободное место -> Mutex -> Enqueue -> Release занятых мест
     static async Task Producer(int id)
     {
         Random rand = new Random(id);
         while (_isRunning)
         {
-            // Ждем, пока освободится место в буфере (с тайм-аутом, чтобы после остановки поток мог завершиться)
+            // Ждем, пока освободится место в буфере (тайм-аут 500 мс, чтобы после остановки поток мог выйти)
             if (!await _emptySlots.WaitAsync(500)) continue;
             // Захватываем мьютекс для безопасной работы с буфером
             _mutex.WaitOne();
@@ -72,7 +63,6 @@ public static class ProducerConsumer
     }
 
     // Метод потребителя
-    // ПОТРЕБИТЕЛЬ: ждёт занятое место -> Mutex -> Dequeue -> Release свободных мест
     static async Task Consumer(int id)
     {
         Random rand = new Random(id + 10);
@@ -81,7 +71,6 @@ public static class ProducerConsumer
             // Ждем, пока появится хотя бы один элемент в буфере (с тайм-аутом по той же причине)
             if (!await _filledSlots.WaitAsync(500)) continue;
             // Захватываем мьютекс
-            // Критическая секция: к буферу только один поток; ReleaseMutex в finally
             _mutex.WaitOne();
             int item;
             try
@@ -102,8 +91,7 @@ public static class ProducerConsumer
     }
 }
 
-// Усложненное задание: в буфере хранятся объекты с полями
-// УСЛОЖНЁННОЕ ЗАДАНИЕ: в буфер кладутся объекты DataItem (Id + Payload), логика та же
+// Усложненное задание: в буфере хранятся объекты с полями (DataItem)
 public class DataItem
 {
     public int Id;
