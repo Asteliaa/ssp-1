@@ -6,15 +6,11 @@ using System.Text.RegularExpressions;
 namespace Lab4;
 
 // Call Tree с горячими путями (код из методички)
-// ТЕОРИЯ: Call Tree - дерево вызовов с временем; горячий путь Run -> ProcessLogs -> IsAnomaly.
-// Дорогие шаги: Regex (разбор шаблона и сопоставление), разбор даты (TryParse перебирает форматы, ParseExact быстрее),
-// Split (массив и новые строки). Конкатенация += в цикле O(n^2), StringBuilder быстрее.
 public static class CallTree
 {
     private static List<string> _logs = new List<string>();
     private static Random _rnd = new Random(1);
 
-    // Счетчики вызовов для построения Call Tree
     private static Dictionary<string, int> _callCounts = new Dictionary<string, int>();
     private static Dictionary<string, double> _callTimes = new Dictionary<string, double>();
     private static Stopwatch _globalSw = new Stopwatch();
@@ -37,11 +33,9 @@ public static class CallTree
 
         Console.WriteLine($"Найдено аномалий: {result.Count}, Общее время: {_globalSw.ElapsedMilliseconds} мс\n");
 
-        // Выводим Call Tree
         PrintCallTree();
     }
 
-    // Генерация тестовых логов
     private static void GenerateData(int count)
     {
         var sw = Stopwatch.StartNew();
@@ -71,7 +65,6 @@ public static class CallTree
         AddCall("GenerateData", sw.Elapsed.TotalMilliseconds);
     }
 
-    // Уровень 1 дерева вызовов: фильтрация, затем анализ аномалий
     private static List<string> ProcessLogs()
     {
         var sw = Stopwatch.StartNew();
@@ -107,7 +100,6 @@ public static class CallTree
         return anomalies;
     }
 
-    // Горячий путь: самый тяжёлый шаг - Regex; разбор даты - задание 2 (ParseExact быстрее TryParse)
     private static bool IsAnomaly(string log)
     {
         var methodSw = Stopwatch.StartNew();
@@ -134,7 +126,7 @@ public static class CallTree
             return false;
         }
 
-        // Шаг 3: разбор даты (тяжелый). Дата находится в первой части строки после "USERnn:"
+        // Шаг 3: разбор даты (тяжелый). Дата в parts[0] после "USERnn:" (в методичке parts[1] - там уровень лога)
         string dateText = parts[0].Substring(parts[0].IndexOf(':') + 1).Trim();
         var dateSw = Stopwatch.StartNew();
         DateTime logDate = default;
@@ -182,7 +174,9 @@ public static class CallTree
         AddCall("IsAnomaly.Checks", checkSw.Elapsed.TotalMilliseconds);
 
         methodSw.Stop();
-        AddCall("IsAnomaly (own time)", methodSw.Elapsed.TotalMilliseconds);
+        double children = splitSw.Elapsed.TotalMilliseconds + dateSw.Elapsed.TotalMilliseconds
+                        + regexSw.Elapsed.TotalMilliseconds + checkSw.Elapsed.TotalMilliseconds;
+        AddCall("IsAnomaly (own time)", methodSw.Elapsed.TotalMilliseconds - children);
         return result;
     }
 
@@ -199,7 +193,6 @@ public static class CallTree
 
     private static double Time(string name) => _callTimes.TryGetValue(name, out var t) ? t : 0;
 
-    // Вывод дерева: время метода, доля от родителя, гистограмма
     private static void PrintCallTree()
     {
         Console.WriteLine("=================== CALL TREE (CPU TIME) ===================\n");
@@ -229,6 +222,24 @@ public static class CallTree
         Console.WriteLine("\n=================== Горячий путь (Hot Path) ===================");
         Console.WriteLine("Main -> ProcessLogs -> IsAnomaly -> " + (Time("IsAnomaly.Regex.Match") > Time(dateKey) ? "Regex.Match" : dateKey));
 
+        // Задание методички: отметить методы с наибольшим Own Time и указать причину медленной работы
+        Console.WriteLine("\n=================== Методы с наибольшим Own Time ===================");
+        var ownTimes = new (string Name, double Time, string Reason)[]
+        {
+            ("IsAnomaly.Regex.Match", Time("IsAnomaly.Regex.Match"), "Regex: разбор шаблона и сопоставление строки при каждом вызове"),
+            (dateKey, Time(dateKey), _parseExact
+                ? "ParseExact: разбор по фиксированному формату, быстрее TryParse"
+                : "TryParse: универсальный разбор, перебирает форматы и учитывает культуру"),
+            ("IsAnomaly.String.Split", Time("IsAnomaly.String.Split"), "Split: создаёт массив и новые строки, нагрузка на GC"),
+            ("FilterLogs (IndexOf)", Time("FilterLogs (IndexOf)"), "FilterLogs: проход по всем строкам и поиск подстроки"),
+            ("GenerateData", Time("GenerateData"), "GenerateData: создание тестовых данных (подготовка, не анализ)"),
+            ("IsAnomaly (own time)", Time("IsAnomaly (own time)"), "собственные операции метода IsAnomaly"),
+            ("IsAnomaly.Checks", Time("IsAnomaly.Checks"), "лёгкие проверки условий"),
+        };
+        int place = 1;
+        foreach (var item in ownTimes.OrderByDescending(x => x.Time).Take(3))
+            Console.WriteLine($"{place++}. {item.Name,-32} {item.Time,8:F1} мс - {item.Reason}");
+
         Console.WriteLine($"\nСтатистика вызовов:");
         foreach (var kvp in _callCounts)
             Console.WriteLine($"   {kvp.Key}: {kvp.Value} вызовов, {_callTimes[kvp.Key]:F1} мс");
@@ -238,10 +249,13 @@ public static class CallTree
     {
         double percent = parentTime > 0 ? time / parentTime * 100 : 0;
 
-        // Создаем визуальную гистограмму
         int barLength = (int)(percent / 2);
         string bar = new string('#', Math.Min(barLength, 50));
 
-        Console.WriteLine($"{name.PadRight(45)} {time,8:F1} мс  ({percent,5:F1}%)  {bar}");
+        // Метки горячих точек
+        string indicator = name.Contains("Regex") ? "  <<< HOT x3" :
+                           name.Contains("IsAnomaly (total") ? "  << HOT x2" :
+                           name.Contains("Split") || name.Contains("TryParse") || name.Contains("ParseExact") ? "  < HOT" : "";
+        Console.WriteLine($"{name.PadRight(45)} {time,8:F1} мс  ({percent,5:F1}%)  {bar}{indicator}");
     }
 }

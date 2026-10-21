@@ -10,7 +10,6 @@ public static class OwnCode
     private static Dictionary<string, double> _times = new Dictionary<string, double>();
     private static Dictionary<string, int> _counts = new Dictionary<string, int>();
 
-    // Профилирование своего кода: замеряем время каждого метода и долю от общего (как Call Tree)
     public static void Run()
     {
         Console.WriteLine("\n=== Профилирование собственного кода ===\n");
@@ -36,8 +35,7 @@ public static class OwnCode
         _counts[name] = 1;
     }
 
-    // Конкатенация строк в цикле: каждый раз создаётся новая строка
-    // Узкое место: += в цикле создаёт новую строку каждый раз (O(n^2))
+    // Узкое место: += создаёт новую строку на каждой итерации (O(n^2))
     private static string BuildTextWithConcat(int count)
     {
         var sw = Stopwatch.StartNew();
@@ -48,7 +46,7 @@ public static class OwnCode
         return result;
     }
 
-    // StringBuilder - то же быстро, без копирования
+    // StringBuilder: без копирования
     private static string BuildTextWithBuilder(int count)
     {
         var sw = Stopwatch.StartNew();

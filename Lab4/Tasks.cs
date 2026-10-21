@@ -3,9 +3,6 @@ using System.Diagnostics;
 
 namespace Lab4;
 
-// ТЕОРИЯ: статический список не очищается, потому что static-поле - корень GC. События вызывают утечки,
-// потому что издатель хранит делегаты, а делегат хранит ссылку на подписчика.
-// LOH: >85 КБ, не уплотняется (копировать дорого), собирается с Gen2. Boxing: объект в куче на каждое значение.
 public static class Tasks
 {
     // ===== Задание 1.1: статическая утечка =====
@@ -13,7 +10,6 @@ public static class Tasks
     {
         Console.WriteLine("\n=== Задание 1.1: статическая утечка ===");
         Console.WriteLine($"До: {GC.GetTotalMemory(false) / 1024} KB");
-        // static-список держит объекты - GC.Collect() память не вернёт
         StaticLeak.AddData();       // 1000 объектов по 10KB
         Console.WriteLine($"После добавления 1000 x 10KB: {GC.GetTotalMemory(false) / 1024} KB");
         GC.Collect();
@@ -28,12 +24,10 @@ public static class Tasks
         var source = new EventLeak();
         Console.WriteLine($"До подписок: {GC.GetTotalMemory(false) / 1024} KB");
         for (int i = 0; i < 100; i++)
-            // Каждая подписка держит 100KB через лямбду; пока есть подписка - объект жив
             source.Subscribe();
         Console.WriteLine($"После 100 подписок: {GC.GetTotalMemory(false) / 1024} KB");
         GC.Collect();
         Console.WriteLine($"После GC.Collect() (подписки живы): {GC.GetTotalMemory(false) / 1024} KB");
-        // После отписки память освобождается
         source.UnsubscribeAll();
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -45,7 +39,6 @@ public static class Tasks
     public static void Task2_1()
     {
         Console.WriteLine("\n=== Задание 2.1: создание объектов в LOH ===");
-        // Порог LOH 85KB: small - обычная куча, large - LOH (Gen2)
         var small = new byte[80_000];   // 80KB - не в LOH
         var large = new byte[90_000];   // 90KB - в LOH
 
@@ -60,7 +53,6 @@ public static class Tasks
         var objects = new List<byte[]>();
         Console.WriteLine($"Память до: {GC.GetTotalMemory(false) / 1024} KB");
         for (int i = 0; i < 100; i++)
-            // 100 x 100KB -> в LOH; очистка списка + GC.Collect(2) возвращает память
             objects.Add(new byte[100 * 1024]);
         Console.WriteLine($"Память после создания 100 x 100KB: {GC.GetTotalMemory(false) / 1024} KB");
 
@@ -76,8 +68,7 @@ public static class Tasks
 
         long mem = GC.GetTotalMemory(true);
         var sw = Stopwatch.StartNew();
-        // С упаковкой
-        // С упаковкой: каждый int -> объект в куче (медленно, много мусора)
+        // С упаковкой: каждый int - отдельный объект в куче
         var boxed = new List<object>();
         for (int i = 0; i < 1000000; i++)
             boxed.Add(i);
@@ -86,8 +77,7 @@ public static class Tasks
 
         mem = GC.GetTotalMemory(true);
         sw.Restart();
-        // Без упаковки
-        // Без упаковки: значения лежат прямо в массиве List<int>
+        // Без упаковки: значения лежат в массиве List<int>
         var unboxed = new List<int>();
         for (int i = 0; i < 1000000; i++)
             unboxed.Add(i);
@@ -105,7 +95,6 @@ public static class Tasks
 
         long mem = GC.GetTotalMemory(true);
         var sw = Stopwatch.StartNew();
-        // ArrayList (упаковка) vs List<int> (без упаковки) - оптимизация кода
         var unoptimized = new UnoptimizedCode();
         for (int i = 0; i < 1000000; i++)
             unoptimized.Add(i);
