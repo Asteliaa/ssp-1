@@ -147,3 +147,74 @@ public static class Philosophers
         }
     }
 }
+
+// Ещё два способа лечения философов: официант (семафор N-1) и тайм-аут с откатом
+public static class PhilosophersFixes
+{
+    const int N = 5;
+    static readonly object[] Sticks = Enumerable.Range(0, N).Select(_ => new object()).ToArray();
+
+    public static void RunWaiter()
+    {
+        Console.WriteLine("=== Философы: официант пускает за стол не более N-1 человек ===\n");
+        var waiter = new SemaphoreSlim(N - 1, N - 1);
+        var tasks = new Task[N];
+        for (int i = 0; i < N; i++)
+        {
+            int id = i;
+            tasks[i] = Task.Run(() =>
+            {
+                for (int round = 0; round < 3; round++)
+                {
+                    waiter.Wait();
+                    lock (Sticks[id])
+                    {
+                        Thread.Sleep(100);
+                        lock (Sticks[(id + 1) % N])
+                        {
+                            Console.WriteLine($"Философ {id}: ест (раунд {round + 1})");
+                            Thread.Sleep(50);
+                        }
+                    }
+                    waiter.Release();
+                }
+            });
+        }
+        Console.WriteLine(Task.WaitAll(tasks, 8000) ? "\nВсе философы поели, deadlock нет" : "\nDEADLOCK");
+    }
+
+    public static void RunTimeout()
+    {
+        Console.WriteLine("=== Философы: тайм-аут второй палочки, откат и повтор ===\n");
+        var tasks = new Task[N];
+        for (int i = 0; i < N; i++)
+        {
+            int id = i;
+            tasks[i] = Task.Run(() =>
+            {
+                var rnd = new Random(id);
+                int round = 0;
+                while (round < 3)
+                {
+                    lock (Sticks[id])
+                    {
+                        Thread.Sleep(100);
+                        if (Monitor.TryEnter(Sticks[(id + 1) % N], 200))
+                        {
+                            try
+                            {
+                                Console.WriteLine($"Философ {id}: ест (раунд {round + 1})");
+                                Thread.Sleep(50);
+                                round++;
+                            }
+                            finally { Monitor.Exit(Sticks[(id + 1) % N]); }
+                        }
+                        else Console.WriteLine($"Философ {id}: не взял вторую палочку, кладёт первую и повторит");
+                    }
+                    Thread.Sleep(rnd.Next(10, 80));
+                }
+            });
+        }
+        Console.WriteLine(Task.WaitAll(tasks, 15000) ? "\nВсе философы поели, deadlock нет" : "\nDEADLOCK");
+    }
+}

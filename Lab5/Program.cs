@@ -16,6 +16,8 @@ switch (args.Length > 0 ? args[0] : "")
     case "deadlock-timeout": DeadlockDemo.RunTimeout(); break;
     case "philosophers": Philosophers.Run(fixedOrder: false); break;
     case "philosophers-fix": Philosophers.Run(fixedOrder: true); break;
+    case "philosophers-waiter": PhilosophersFixes.RunWaiter(); break;
+    case "philosophers-timeout": PhilosophersFixes.RunTimeout(); break;
     case "mutex": MutexCrossProcess.Run(); break;
     case "p2t1": Part2.Task1(); break;
     case "p2t2": Part2.Task2(); break;
@@ -36,6 +38,6 @@ switch (args.Length > 0 ? args[0] : "")
         }
         break;
     default:
-        Console.WriteLine("Режимы: pc, pc2, pc10, pc-more, pc-items, deadlock, deadlock-fix, deadlock-timeout, philosophers, philosophers-fix, mutex, p2t1..p2t5, variant 1..7");
+        Console.WriteLine("Режимы: pc, pc2, pc10, pc-more, pc-items, deadlock, deadlock-fix, deadlock-timeout, philosophers, philosophers-fix, philosophers-waiter, philosophers-timeout, mutex, p2t1..p2t5, variant 1..7");
         break;
 }
